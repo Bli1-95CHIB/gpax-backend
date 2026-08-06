@@ -7,22 +7,48 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect to Supabase
+// ===== YOUR DATABASE CONNECTION =====
+// 👇 REPLACE THIS with your actual Supabase connection string
+const DATABASE_URL = "postgresql://postgres:Bli1-95CHIB@db.ylrqzxmmcingdoprwher.supabase.co:5432/postgres"
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 
-// Grade mapping
+// Test connection
+pool.connect((err) => {
+    if (err) {
+        console.error('❌ Database connection failed:', err.message);
+    } else {
+        console.log('✅ Database connected successfully!');
+    }
+});
+
+// ===== ROOT ROUTE =====
+app.get('/', (req, res) => {
+    res.json({
+        message: '🚀 GPAX API is running!',
+        status: 'online',
+        endpoints: [
+            'POST /api/signup',
+            'POST /api/login',
+            'GET /api/courses/:userId',
+            'POST /api/courses',
+            'PUT /api/courses/:id',
+            'DELETE /api/courses/:id',
+            'GET /api/transcript/:userId',
+            'POST /api/simulate'
+        ]
+    });
+});
+
+// ===== GRADE HELPER =====
 function gradeToPoints(grade) {
-    const map = {
-        'A': 5.0, 'B': 4.0, 'C': 3.0,
-        'D': 2.0, 'E': 1.0, 'F': 0.0
-    };
+    const map = { 'A': 5.0, 'B': 4.0, 'C': 3.0, 'D': 2.0, 'E': 1.0, 'F': 0.0 };
     return map[grade] || 0;
 }
 
-// ---------- SIGNUP ----------
+// ===== SIGNUP =====
 app.post('/api/signup', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -43,7 +69,7 @@ app.post('/api/signup', async (req, res) => {
     }
 });
 
-// ---------- LOGIN ----------
+// ===== LOGIN =====
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -71,7 +97,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ---------- UPDATE TARGET GPA ----------
+// ===== UPDATE TARGET GPA =====
 app.put('/api/users/target', async (req, res) => {
     const { userId, targetGpa } = req.body;
     if (!userId || targetGpa === undefined) {
@@ -88,7 +114,7 @@ app.put('/api/users/target', async (req, res) => {
     }
 });
 
-// ---------- UPDATE THEME ----------
+// ===== UPDATE THEME =====
 app.put('/api/users/theme', async (req, res) => {
     const { userId, theme } = req.body;
     if (!userId || !theme) {
@@ -105,7 +131,7 @@ app.put('/api/users/theme', async (req, res) => {
     }
 });
 
-// ---------- GET ALL COURSES ----------
+// ===== GET ALL COURSES =====
 app.get('/api/courses/:userId', async (req, res) => {
     const userId = req.params.userId;
     try {
@@ -119,7 +145,7 @@ app.get('/api/courses/:userId', async (req, res) => {
     }
 });
 
-// ---------- ADD COURSE ----------
+// ===== ADD COURSE =====
 app.post('/api/courses', async (req, res) => {
     const { userId, courseName, credits, grade, level, semester } = req.body;
     if (!userId || !courseName || !credits || !grade || !level || !semester) {
@@ -144,7 +170,7 @@ app.post('/api/courses', async (req, res) => {
     }
 });
 
-// ---------- EDIT COURSE ----------
+// ===== EDIT COURSE =====
 app.put('/api/courses/:id', async (req, res) => {
     const courseId = req.params.id;
     const { courseName, credits, grade, level, semester } = req.body;
@@ -164,7 +190,7 @@ app.put('/api/courses/:id', async (req, res) => {
     }
 });
 
-// ---------- DELETE COURSE ----------
+// ===== DELETE COURSE =====
 app.delete('/api/courses/:id', async (req, res) => {
     const courseId = req.params.id;
     try {
@@ -175,7 +201,7 @@ app.delete('/api/courses/:id', async (req, res) => {
     }
 });
 
-// ---------- GET TRANSCRIPT ----------
+// ===== TRANSCRIPT =====
 app.get('/api/transcript/:userId', async (req, res) => {
     const userId = req.params.userId;
     try {
@@ -241,7 +267,7 @@ app.get('/api/transcript/:userId', async (req, res) => {
     }
 });
 
-// ---------- WHAT-IF SIMULATOR ----------
+// ===== WHAT-IF SIMULATOR =====
 app.post('/api/simulate', async (req, res) => {
     const { userId, credits, grade } = req.body;
     if (!userId || !credits || !grade) {
@@ -279,4 +305,5 @@ app.post('/api/simulate', async (req, res) => {
     }
 });
 
+// ===== EXPORT FOR VERCEL =====
 module.exports = app;
