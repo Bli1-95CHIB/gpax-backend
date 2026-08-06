@@ -25,7 +25,7 @@ pool.connect((err) => {
 });
 
 // ===== ROOT ROUTE =====
-app.get('/', (req, res) => {
+app.get('/api/signup', (req, res) => {
     res.json({
         message: '🚀 GPAX API is running!',
         status: 'online',
